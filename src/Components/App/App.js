@@ -5,18 +5,35 @@ import SearchBar from '../SearchBar/SearchBar';
 import SearchResults from '../SearchResults/SearchResults';
 import Playlist from '../Playlist/Playlist';
 
-const playlistName = 'Chill';
-const playlistTracks = [
-  {name: 'Tiny Dancer', artist: 'Elton John', album: 'Madman Across The Water', id: '1'},
-  {name: 'Tiny Dancer', artist: 'Tim McGraw' , album: 'Love story', id: '2'},
-  {name: 'Tiny Dancer', artist: 'Rockabye Baby!', album: 'Lullaby Renditions of Elton John', id: '3'}
-]
+
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchResults: []
+      searchResults: [
+        {name: 'Tiny Dancer 1', artist: 'Elton John', album: 'Madman Across The Water', id: '1'},
+        {name: 'Tiny Dancer 2', artist: 'Tim McGraw' , album: 'Love story', id: '2'},
+        {name: 'Tiny Dancer 3', artist: 'Rockabye Baby!', album: 'Lullaby Renditions of Elton John', id: '3'}
+      ],
+      playlistName: 'Chill',
+      playlistTracks: [
+        {name: 'playlist1', artist: 'artist1', album: 'album1', id: '4'},
+        {name: 'playlist2', artist: 'artist2', album: 'album2', id: '5'},
+        {name: 'playlist3', artist: 'artist3', album: 'album3', id: '6'}
+      ]
+    };
+    this.addTrack = this.addTrack.bind(this);
+  }
+
+  addTrack(trackToSave) { //Add tracks from search result to playlist
+    let tracks = this.state.playlistTracks;
+    if (tracks.find(track => track.id  === trackToSave.id)) {
+      return; //break out of the method if track already exists in Playlist
     }
+    tracks.push(trackToSave);
+    this.setState({
+      playlistTracks: tracks 
+    });
   }
 
   render() {
@@ -26,8 +43,8 @@ class App extends React.Component {
         <div className="App">
             <SearchBar/>
           <div className="App-playlist">
-            <SearchResults resultList={this.state.searchResults}/>
-            <Playlist playlistName={playlistName} playlistTracks={playlistTracks}/>
+            <SearchResults resultList={this.state.searchResults} onAdd={this.addTrack}/>
+            <Playlist name={this.state.playlistName} playlistTracks={this.state.playlistTracks}/>
           </div>
         </div>
       </div>
