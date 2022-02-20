@@ -16,13 +16,16 @@ const Spotify = {
             //clear the parameters, allowing us to grab a new access token when it expires
             window.setTimeout(() => accessToken = '', expiresIn * 1000);
             window.history.pushState('Access Token', null, '/');
+            return accessToken;
         } else {
-            const accessUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&scope=playlist-modify-public&redirect_uri=${redirectURI}`
+            const accessUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&scope=playlist-modify-public&redirect_uri=${redirectURI}`;
+            window.location = accessUrl;
         }
     },
 
     search(term) {
-        fetch(`https://api.spotify.com/v1/search?type=track&q=${term}`, {
+        const accessToken = Spotify.getAccessToken();
+        return fetch(`https://api.spotify.com/v1/search?type=track&q=${term}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
@@ -30,15 +33,14 @@ const Spotify = {
             return response.json();
         }).then(jsonResponse => {
             if (jsonResponse.tracks) {
-                jsonResponse.tracks.map(track => {
-                    return {
+                return jsonResponse.tracks.items.map(track => ({
                         id: track.id,
                         name: track.name,
-                        artist: track.artist,
-                        album: track.album,
+                        artist: track.artists[0].name,
+                        album: track.album.name,
                         uri: track.uri
-                    }
-                });
+                    
+                }));
             }
             return []; 
         });
@@ -48,7 +50,7 @@ const Spotify = {
         if (!name || !trackUri.length) {
             return;
         }
-        const accessToken = Spotify.getAccessToken;
+        const accessToken = Spotify.getAccessToken();
         const headers = {
             Authorization: `Bearer ${accessToken}`
         };
@@ -63,13 +65,8 @@ const Spotify = {
                     method: 'POST',
                     headers: headers,
                     body: JSON.stringify({name: name})
-                }). then(response => {
-                    if (response.ok) {
-                        return response.json;
-                    }
-                    throw new Error('Request failed');
-                }, networkError => console.log(networkError.message)
-                ).then(jsonResponse => {
+                }). then(response => response.json
+                    ).then(jsonResponse => {
                     const playlistID = jsonResponse.id;
                     return fetch(`https://api.spotify.com/v1/users/${userId}/playlists/${playlistID}/tracks`, {
                         method: 'POST',
